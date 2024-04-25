@@ -1,3 +1,4 @@
 # NOTE: on MacOS you need to add an addition flag: -undefined dynamic_lookup
+export PATH := /home/zhang/anaconda3/envs/dls/bin:$(PATH)
 default:
-	c++ -O3 -Wall -shared -std=c++11 -fPIC $$(python3 -m pybind11 --includes) src/simple_ml_ext.cpp -o src/simple_ml_ext.so
+	c++ -O3 -Wall -shared -std=c++11 -fPIC $$(python3 -m pybind11 --includes) src/simple_ml_ext.cpp -o src/simple_ml_ext.so -g
