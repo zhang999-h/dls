@@ -82,7 +82,8 @@ class PowerScalar(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+
+        return out_grad * self.scalar * power_scalar(node.inputs[0], self.scalar - 1)
         ### END YOUR SOLUTION
 
 
@@ -121,7 +122,8 @@ class EWiseDiv(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        lhs, rhs = node.inputs
+        return out_grad / rhs, -(out_grad * (lhs / (rhs * rhs)))
         ### END YOUR SOLUTION
 
 
@@ -140,7 +142,7 @@ class DivScalar(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return out_grad / self.scalar
         ### END YOUR SOLUTION
 
 
@@ -165,7 +167,7 @@ class Transpose(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return transpose(out_grad, self.axes)
         ### END YOUR SOLUTION
 
 
@@ -184,7 +186,9 @@ class Reshape(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+
+        return reshape(out_grad, node.inputs[0].shape)
+
         ### END YOUR SOLUTION
 
 
@@ -203,7 +207,18 @@ class BroadcastTo(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        out_shape = out_grad.shape
+        intput_shape = node.inputs[0].shape
+        intput_shape_len = len(intput_shape) - 1
+        axes_to_reduce = []
+        for i in range(len(out_shape) - 1, -1, -1):
+            if intput_shape_len < 0:
+                axes_to_reduce.append(i)
+                continue
+            if intput_shape[intput_shape_len] != out_shape[i]:
+                axes_to_reduce.append(i)
+            intput_shape_len -= 1
+        return reshape(summation(out_grad, tuple(axes_to_reduce)), intput_shape)
         ### END YOUR SOLUTION
 
 
@@ -222,7 +237,17 @@ class Summation(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        input_shape = node.inputs[0].shape  # 输入的shape
+        reduce_shape = list(input_shape)
+        if self.axes is not None:
+            for axis in self.axes:
+                reduce_shape[axis] = 1
+            grad = reshape(out_grad, reduce_shape)
+        else:
+            grad = out_grad
+        return broadcast_to(grad, input_shape)
+
+
         ### END YOUR SOLUTION
 
 
@@ -238,7 +263,22 @@ class MatMul(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        lhs, rhs = node.inputs
+        lhs_tmp_grad = matmul(out_grad, transpose(rhs))
+        rhs_tmp_grad = matmul(transpose(lhs), out_grad)
+
+        # Adjust the shape of the gradients if necessary.
+        # For example, if lhs.shape is (5, 4), and rhs.shape is (6, 6, 4, 3)
+        # then out_grad.shape is (6, 6, 5, 3),
+        # and now grad_A.shape is (6, 6, 5, 4) and grad_B.shape is (6, 6, 4, 3).
+        # So we need to sum over the first two axes of grad_A.
+        # grad_A(6, 6, 5, 4) --->>> grad_A(5, 4)
+        if lhs_tmp_grad.shape != lhs.shape:
+            lhs_tmp_grad = summation(lhs_tmp_grad,tuple(range(len(lhs_tmp_grad.shape)-2)))
+        if rhs_tmp_grad.shape != rhs.shape:
+            rhs_tmp_grad = summation(rhs_tmp_grad,tuple(range(len(rhs_tmp_grad.shape)-2)))
+
+        return lhs_tmp_grad, rhs_tmp_grad
         ### END YOUR SOLUTION
 
 
@@ -254,7 +294,7 @@ class Negate(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return -1 * out_grad
         ### END YOUR SOLUTION
 
 
