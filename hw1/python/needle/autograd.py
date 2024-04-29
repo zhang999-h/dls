@@ -380,7 +380,18 @@ def compute_gradient_of_variables(output_tensor, out_grad):
     reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
 
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    for node in reverse_topo_order:
+        node.grad = sum_node_list(node_to_output_grads_list[node])
+        if node.op is None:
+            continue
+
+        # 算出结点输入的梯度，input_grads是list 包含所有输入的梯度
+        # 一个结点的所有输入一起运算算出这个结点，所以调用一次函数就能求出所有输入结点的梯度
+        input_grads = node.op.gradient_as_tuple(node.grad, node)
+        for i, k in enumerate(node.inputs):
+            if k not in node_to_output_grads_list:
+                node_to_output_grads_list[k] = []
+            node_to_output_grads_list[k].append(input_grads[i])
     ### END YOUR SOLUTION
 
 
