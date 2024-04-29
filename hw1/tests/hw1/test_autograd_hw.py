@@ -1,7 +1,7 @@
 import sys
 
-sys.path.append("./python")
-sys.path.append("./apps")
+sys.path.append("../../python")
+sys.path.append("../../apps")
 from simple_ml import *
 import numdifftools as nd
 
@@ -902,7 +902,7 @@ def test_softmax_loss_ndl():
     gradient_check(ndl.log, ndl.Tensor(1 + np.random.rand(5, 4)))
 
     X, y = parse_mnist(
-        "data/train-images-idx3-ubyte.gz", "data/train-labels-idx1-ubyte.gz"
+        "../../data/train-images-idx3-ubyte.gz", "../../data/train-labels-idx1-ubyte.gz"
     )
     np.random.seed(0)
     Z = ndl.Tensor(np.zeros((y.shape[0], 10)).astype(np.float32))

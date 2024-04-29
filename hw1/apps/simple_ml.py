@@ -32,10 +32,18 @@ def parse_mnist(image_filesname, label_filename):
                 labels of the examples.  Values should be of type np.int8 and
                 for MNIST will contain the values 0-9.
     """
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    ### BEGIN YOUR CODE
+    with gzip.open(image_filesname, 'rb') as f:
+        magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
+        X = np.frombuffer(f.read(), dtype=np.uint8).reshape(num, rows * cols)
+        X = X.astype(np.float32) / 255.0
 
+    with gzip.open(label_filename, 'rb') as f:
+        magic, num = struct.unpack(">II", f.read(8))
+        y = np.frombuffer(f.read(), dtype=np.uint8)
+
+    return X, y
+    ###
 
 def softmax_loss(Z, y_one_hot):
     """Return softmax loss.  Note that for the purposes of this assignment,
@@ -53,9 +61,14 @@ def softmax_loss(Z, y_one_hot):
     Returns:
         Average softmax loss over the sample. (ndl.Tensor[np.float32])
     """
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    ### BEGIN YOUR CODE
+    tmp = ndl.log(ndl.summation(ndl.exp(Z), axes=1))
+
+    tmp -= ndl.summation(y_one_hot * Z,axes=1)
+    return ndl.summation(tmp) / tmp.shape[0]
+
+    ### END YOUR CODE
+
 
 
 def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
@@ -81,10 +94,32 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
             W1: ndl.Tensor[np.float32]
             W2: ndl.Tensor[np.float32]
     """
+    ### BEGIN YOUR CODE
 
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    print(X.shape)
+    for i in range(0, X.shape[0], batch):
+        X_batch = X[i:i + batch]
+        y_batch = y[i:i + batch]
+        Z2 = np.matmul(X_batch, W1)
+        Z2[Z2 < 0] = 0
+
+        Z3 = np.matmul(Z2, W2)
+        # Z3[Z3<0]=0
+        S = np.exp(Z3)
+        S = S / np.sum(S, axis=1, keepdims=True)
+        I = np.zeros_like(S)
+        I[np.arange(I.shape[0]), y_batch] = 1
+        G3 = S - I
+        delta_W2 = (1 / batch) * np.matmul(Z2.T, G3)
+        G2 = np.matmul(G3, W2.T)
+        G2[Z2 <= 0] = 0
+
+        delta_W1 = (1 / batch) * np.matmul(X_batch.T, G2)
+        W2 -= lr * delta_W2
+        W1 -= lr * delta_W1
+
+    ### END YOUR CODE
+
 
 
 ### CODE BELOW IS FOR ILLUSTRATION, YOU DO NOT NEED TO EDIT
