@@ -98,25 +98,23 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
 
     print(X.shape)
     for i in range(0, X.shape[0], batch):
-        X_batch = X[i:i + batch]
+        X_batch = ndl.Tensor(X[i:i + batch])
         y_batch = y[i:i + batch]
-        Z2 = np.matmul(X_batch, W1)
-        Z2[Z2 < 0] = 0
 
-        Z3 = np.matmul(Z2, W2)
-        # Z3[Z3<0]=0
-        S = np.exp(Z3)
-        S = S / np.sum(S, axis=1, keepdims=True)
-        I = np.zeros_like(S)
-        I[np.arange(I.shape[0]), y_batch] = 1
-        G3 = S - I
-        delta_W2 = (1 / batch) * np.matmul(Z2.T, G3)
-        G2 = np.matmul(G3, W2.T)
-        G2[Z2 <= 0] = 0
+        Z1 = ndl.matmul(X_batch, W1)
+        Z1 = ndl.relu(Z1)
+        Z2 = ndl.matmul(Z1, W2)
 
-        delta_W1 = (1 / batch) * np.matmul(X_batch.T, G2)
-        W2 -= lr * delta_W2
-        W1 -= lr * delta_W1
+        label = np.zeros(Z2.shape)
+        label[np.arange(label.shape[0]), y_batch] = 1
+        label = ndl.Tensor(label)
+        loss = softmax_loss(Z2, label)
+
+        loss.backward()
+
+        W1 = ndl.Tensor(W1.numpy() - lr * W1.grad.numpy())
+        W2 = ndl.Tensor(W2.numpy() - lr * W2.grad.numpy())
+    return W1, W2
 
     ### END YOUR CODE
 

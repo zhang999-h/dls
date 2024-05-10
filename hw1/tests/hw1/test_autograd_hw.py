@@ -1001,7 +1001,7 @@ def test_nn_epoch_ndl():
 
     # test full epoch
     X, y = parse_mnist(
-        "data/train-images-idx3-ubyte.gz", "data/train-labels-idx1-ubyte.gz"
+        "../../data/train-images-idx3-ubyte.gz", "../../data/train-labels-idx1-ubyte.gz"
     )
     np.random.seed(0)
     W1 = ndl.Tensor(np.random.randn(X.shape[1], 100).astype(np.float32) / np.sqrt(100))

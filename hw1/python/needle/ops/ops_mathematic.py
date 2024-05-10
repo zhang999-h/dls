@@ -339,12 +339,18 @@ def exp(a):
 class ReLU(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # 注意不要修改原来a的值
+        res = a.copy()
+        res[res < 0] = 0
+        return res
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        out_grad_data = out_grad.realize_cached_data()
+        input_data = node.inputs[0].realize_cached_data()
+        out_grad_data[input_data < 0] = 0
+        return Tensor(out_grad_data)
         ### END YOUR SOLUTION
 
 
