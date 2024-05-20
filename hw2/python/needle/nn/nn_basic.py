@@ -88,12 +88,16 @@ class Linear(Module):
         self.out_features = out_features
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.weight = Parameter(init.kaiming_uniform(in_features, out_features, device=device, dtype=dtype))
+        self.bias = Parameter(
+            init.kaiming_uniform(out_features, 1, device=device, dtype=dtype).reshape((1, out_features)))
         ### END YOUR SOLUTION
 
     def forward(self, X: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        X_mul_W = X.matmul(self.weight)
+        b = self.bias.broadcast_to(X_mul_W.shape)
+        return ops.add(X_mul_W, b)
         ### END YOUR SOLUTION
 
 
@@ -107,7 +111,7 @@ class Flatten(Module):
 class ReLU(Module):
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return ops.relu(x)
         ### END YOUR SOLUTION
 
 
@@ -118,14 +122,19 @@ class Sequential(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for module in self.modules:
+            x = module(x)
+        return x
         ### END YOUR SOLUTION
 
 
 class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        one_hot_y = init.one_hot(logits.shape[1], y)
+        z_y = ops.summation(logits * one_hot_y, axes=1)
+        loss = ops.logsumexp(logits, axes=1) - z_y
+        return ops.summation(loss)/logits.shape[0]
         ### END YOUR SOLUTION
 
 
