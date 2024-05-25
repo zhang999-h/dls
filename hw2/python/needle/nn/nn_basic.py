@@ -138,7 +138,8 @@ class SoftmaxLoss(Module):
         one_hot_y = init.one_hot(logits.shape[1], y)
         z_y = ops.summation(logits * one_hot_y, axes=1)
         loss = ops.logsumexp(logits, axes=1) - z_y
-        return ops.summation(loss) / logits.shape[0]
+        result = ops.summation(loss) / logits.shape[0]
+        return result
         ### END YOUR SOLUTION
 
 
@@ -151,8 +152,8 @@ class BatchNorm1d(Module):
         ### BEGIN YOUR SOLUTION
         self.weight = Parameter(init.ones(dim, dtype=dtype))
         self.bias = Parameter(init.zeros(dim, dtype=dtype))
-        self.running_mean = Parameter(init.zeros(dim, dtype=dtype))
-        self.running_var = Parameter(init.ones(dim, dtype=dtype))
+        self.running_mean = init.zeros(dim, dtype=dtype)
+        self.running_var = init.ones(dim, dtype=dtype)
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
@@ -166,8 +167,8 @@ class BatchNorm1d(Module):
                                                  2), axes=0) / batch_size
 
             # update running_mean&running_var for testing
-            self.running_mean = (1 - self.momentum) * self.running_mean + self.momentum * mean
-            self.running_var = (1 - self.momentum) * self.running_var + self.momentum * var
+            self.running_mean.data = (1 - self.momentum) * self.running_mean + self.momentum * mean
+            self.running_var.data = (1 - self.momentum) * self.running_var + self.momentum * var
 
             mean = mean.reshape((1, layer_size)).broadcast_to(x.shape)
             var = var.reshape((1, layer_size)).broadcast_to(x.shape)

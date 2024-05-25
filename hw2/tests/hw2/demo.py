@@ -39,3 +39,15 @@ e=np.eye(10,4)
 print(e[[3,2]])
 t=np.arange(16).reshape((4,4))
 print(t[[3,2]])
+
+# 定义一个 float32 类型的数
+a = np.float32(1.0)
+print(f"a: {a}, type: {type(a)}, dtype: {a.dtype}")
+
+# 定义一个整数
+b = 2
+print(f"b: {b}, type: {type(b)}")
+
+# 进行除法运算
+result = a * b
+print(f"result: {result}, type: {type(result)}, dtype: {result.dtype}")
