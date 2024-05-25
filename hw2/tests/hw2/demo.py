@@ -51,3 +51,6 @@ print(f"b: {b}, type: {type(b)}")
 # 进行除法运算
 result = a * b
 print(f"result: {result}, type: {type(result)}, dtype: {result.dtype}")
+
+shift_x, shift_y = np.random.randint(low=-2, high=2+1, size=2)
+print(shift_x,shift_y)
