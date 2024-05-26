@@ -58,14 +58,15 @@ class DataLoader:
             self.ordering = np.array_split(np.arange(len(dataset)), 
                                            range(batch_size, len(dataset), batch_size))
         ### BEGIN YOUR SOLUTION
-        else:
-            self.ordering = np.array_split(np.random.permutation(len(self.dataset)),
-                                           range(self.batch_size, len(self.dataset), self.batch_size))
+
 
         ### END YOUR SOLUTION
 
     def __iter__(self):
         ### BEGIN YOUR SOLUTION
+        if self.shuffle:
+            self.ordering = np.array_split(np.random.permutation(len(self.dataset)),
+                                           range(self.batch_size, len(self.dataset), self.batch_size))
         self.index = 0
         ### END YOUR SOLUTION
         return self
