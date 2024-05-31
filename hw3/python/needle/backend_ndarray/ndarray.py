@@ -391,7 +391,7 @@ class NDArray:
         new_offset = 0
         for i, idx in enumerate(idxs):
             # shape：计算出切片之后，每个维度还剩下的长度
-            rest_len = (idx.stop - idx.start) // idx.step
+            rest_len = (idx.stop - idx.start + idx.step - 1) // idx.step
             new_shape.append(rest_len)
             # stride：在原来的stride基础上，乘上切片指定的step
             new_strides.append(self._strides[i] * idx.step)

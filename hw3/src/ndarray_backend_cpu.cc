@@ -78,11 +78,12 @@ void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shap
     int32_t cnt = 0;
     while (true) {
         out->ptr[cnt++] = a.ptr[calculateIdx(index, strides, offset)];
-        //index[dim - 1]++;
+        //printf("%d---%f---%d",cnt-1,out->ptr[cnt-1],calculateIdx(index, strides, offset));
+        //printf("****%d,%d--%d,%d--%d,%d\n",index[0],strides[0],index[1],strides[1],index[2],strides[2]);
         for (int32_t i = dim - 1; i >= 0; i--) {
             index[i]++;
             if (index[i] < shape[i]) {
-                for (int32_t j = i + 1; i < dim; i++) {
+                for (int32_t j = i + 1; j < dim; j++) {
                     index[j]=0;
                 }
                 break;
@@ -108,7 +109,24 @@ void EwiseSetitem(const AlignedArray& a, AlignedArray* out, std::vector<int32_t>
    *   offset: offset of the *out* array (not a, which has zero offset, being compact)
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+    int32_t dim = shape.size();
+    std::vector <int32_t> index(dim, 0);
+    int32_t cnt = 0;
+    while (true) {
+        out->ptr[calculateIdx(index, strides, offset)] = a.ptr[cnt++];
+        for (int32_t i = dim - 1; i >= 0; i--) {
+            index[i]++;
+            if (index[i] < shape[i]) {
+                for (int32_t j = i + 1; j < dim; j++) {
+                    index[j]=0;
+                }
+                break;
+            }
+        }
+        if(index[0]>=shape[0]){
+            break;
+        }
+    }
   /// END SOLUTION
 }
 
@@ -129,7 +147,24 @@ void ScalarSetitem(const size_t size, scalar_t val, AlignedArray* out, std::vect
    */
 
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+  int32_t dim = shape.size();
+    std::vector <int32_t> index(dim, 0);
+    int32_t cnt = 0;
+    while (true) {
+        out->ptr[calculateIdx(index, strides, offset)] = val;
+        for (int32_t i = dim - 1; i >= 0; i--) {
+            index[i]++;
+            if (index[i] < shape[i]) {
+                for (int32_t j = i + 1; j < dim; j++) {
+                    index[j]=0;
+                }
+                break;
+            }
+        }
+        if(index[0]>=shape[0]){
+            break;
+        }
+    }
   /// END SOLUTION
 }
 
