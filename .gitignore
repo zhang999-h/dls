@@ -3,3 +3,4 @@
 *.so
 
 **/build/
+./hw3/build
