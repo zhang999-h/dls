@@ -247,7 +247,12 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if prod(new_shape) != self.size:
+            raise ValueError()
+        if self.is_compact() is False:  # ??
+            raise ValueError()
+        return self.make(new_shape, strides=self.compact_strides(new_shape),
+                         device=self._device, handle=self._handle, offset=self._offset)
         ### END YOUR SOLUTION
 
     def permute(self, new_axes):
@@ -272,7 +277,15 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        new_shape = []
+        new_strides = []
+        for axes in new_axes:
+            new_shape.append(self._shape[axes])
+        for axes in new_axes:
+            new_strides.append(self._strides[axes])
+        # new_strides = np.array(self._strides)[list(new_axes)]
+        return self.make(new_shape, strides=tuple(new_strides),
+                         device=self._device, handle=self._handle, offset=self._offset)
         ### END YOUR SOLUTION
 
     def broadcast_to(self, new_shape):
@@ -296,7 +309,18 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        assert (len(new_shape) == len(self.shape))
+        new_strides = []
+        for i in range(len(new_shape)):
+            if self._shape[i] == new_shape[i]:
+                new_strides.append(self._strides[i])
+            else:
+                if self._shape[i] == 1:
+                    new_strides.append(0)
+                else:
+                    assert self._shape[i] == new_shape[i]
+        return self.make(new_shape, strides=tuple(new_strides),
+                         device=self._device, handle=self._handle, offset=self._offset)
         ### END YOUR SOLUTION
 
     ### Get and set elements
@@ -361,9 +385,20 @@ class NDArray:
             ]
         )
         assert len(idxs) == self.ndim, "Need indexes equal to number of dimensions"
-
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        new_shape = []
+        new_strides = []
+        new_offset = 0
+        for i, idx in enumerate(idxs):
+            # shape：计算出切片之后，每个维度还剩下的长度
+            rest_len = (idx.stop - idx.start) // idx.step
+            new_shape.append(rest_len)
+            # stride：在原来的stride基础上，乘上切片指定的step
+            new_strides.append(self._strides[i] * idx.step)
+            # offset：计算切片的起始位置（每个维度都要）
+            new_offset += idx.start * self._strides[i]
+        return self.make(new_shape, strides=tuple(new_strides),
+                         device=self._device, handle=self._handle, offset=new_offset)
         ### END YOUR SOLUTION
 
     def __setitem__(self, idxs, other):
