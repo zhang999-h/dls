@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <vector>
+
 namespace needle {
 namespace cpu {
 
@@ -27,7 +29,8 @@ struct AlignedArray {
     this->size = size;
   }
   ~AlignedArray() { free(ptr); }
-  size_t ptr_as_int() {return (size_t)ptr; }
+
+    size_t ptr_as_int() { return (size_t) ptr; }// 返回指针的整数表示
   scalar_t* ptr;
   size_t size;
 };
@@ -44,6 +47,14 @@ void Fill(AlignedArray* out, scalar_t val) {
 }
 
 
+        int32_t calculateIdx(std::vector <int32_t> &index, std::vector <int32_t> &strides, size_t offset) {
+            int32_t idx = offset;
+            int32_t len = index.size();
+            for (int32_t i = 0; i < len; i++) {
+                idx += index[i] * strides[i];
+            }
+            return idx;
+        }
 
 void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shape,
              std::vector<int32_t> strides, size_t offset) {
@@ -62,7 +73,25 @@ void Compact(const AlignedArray& a, AlignedArray* out, std::vector<int32_t> shap
    *  function will implement here, so we won't repeat this note.)
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+    int32_t dim = shape.size();
+    std::vector <int32_t> index(dim, 0);
+    int32_t cnt = 0;
+    while (true) {
+        out->ptr[cnt++] = a.ptr[calculateIdx(index, strides, offset)];
+        //index[dim - 1]++;
+        for (int32_t i = dim - 1; i >= 0; i--) {
+            index[i]++;
+            if (index[i] < shape[i]) {
+                for (int32_t j = i + 1; i < dim; i++) {
+                    index[j]=0;
+                }
+                break;
+            }
+        }
+        if(index[0]>=shape[0]){
+            break;
+        }
+    }
   /// END SOLUTION
 }
 
