@@ -542,7 +542,9 @@ class NDArray:
 
             def tile(a, tile):
                 return a.as_strided(
+                    # 形状
                     (a.shape[0] // tile, a.shape[1] // tile, tile, tile),
+                    # 步长
                     (a.shape[1] * tile, tile, self.shape[1], 1),
                 )
 

@@ -4,3 +4,4 @@
 
 **/build/
 ./hw3/build
+./hw3/cmake-build-debug/
