@@ -430,7 +430,16 @@ void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, 
 ////////////////////////////////////////////////////////////////////////////////
 // Max and sum reductions
 ////////////////////////////////////////////////////////////////////////////////
-
+__global__ void ReduceMaxKernel(const scalar_t *a, scalar_t *out, size_t size, size_t reduce_size){
+    size_t gid = blockDim.x * blockIdx.x +threadIdx.x;
+    if (gid < size){
+        int start = gid * reduce_size;
+        out[gid] = a[start];
+        for (int i = start; i < start + reduce_size; i++) {
+            out[gid] = max(out[gid], a[i]);
+        }
+    }
+}
 
 void ReduceMax(const CudaArray& a, CudaArray* out, size_t reduce_size) {
   /**
@@ -443,11 +452,21 @@ void ReduceMax(const CudaArray& a, CudaArray* out, size_t reduce_size) {
    *   redice_size: size of the dimension to reduce over
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+    CudaDims dim = CudaOneDim(out->size);
+    ReduceMaxKernel<<<dim.grid,dim.block>>>(a.ptr, out->ptr, out->size, reduce_size);
   /// END SOLUTION
 }
 
-
+__global__ void ReduceSumKernel(const scalar_t *a, scalar_t *out, size_t count, size_t reduce_size) {
+    size_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+    if (gid < count) {
+        int start = gid * reduce_size;
+        out[gid] = 0;
+        for (int i = start; i < start + reduce_size; i++) {
+            out[gid] += a[i];
+        }
+    }
+}
 
 void ReduceSum(const CudaArray& a, CudaArray* out, size_t reduce_size) {
   /**
@@ -460,7 +479,8 @@ void ReduceSum(const CudaArray& a, CudaArray* out, size_t reduce_size) {
    *   redice_size: size of the dimension to reduce over
    */
   /// BEGIN SOLUTION
-  assert(false && "Not Implemented");
+    CudaDims dim = CudaOneDim(out->size);
+    ReduceSumKernel<<<dim.grid,dim.block>>>(a.ptr, out->ptr, out->size, reduce_size);
   /// END SOLUTION
 }
 
@@ -531,6 +551,6 @@ PYBIND11_MODULE(ndarray_backend_cuda, m) {
 
   // m.def("matmul", Matmul);
 
-  // m.def("reduce_max", ReduceMax);
-  // m.def("reduce_sum", ReduceSum);
+   m.def("reduce_max", ReduceMax);
+   m.def("reduce_sum", ReduceSum);
 }
