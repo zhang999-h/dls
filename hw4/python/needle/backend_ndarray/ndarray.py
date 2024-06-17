@@ -251,8 +251,7 @@ class NDArray:
             raise ValueError()
         if self.is_compact() is False:  # ??
             raise ValueError()
-        return self.make(new_shape, strides=self.compact_strides(new_shape),
-                         device=self._device, handle=self._handle, offset=self._offset)
+        return self.as_strided(new_shape, NDArray.compact_strides(new_shape))
         ### END YOUR SOLUTION
 
     def permute(self, new_axes):
@@ -309,16 +308,27 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
-        assert (len(new_shape) == len(self.shape))
+        # 补齐不同的形状
+        self_len = len(self.shape)
+        new_len = len(new_shape)
+        assert new_len >= self_len
+        pre_shape = self.shape
+        if self_len < new_len:
+            pre_shape = (1,) * (new_len - self_len) + self.shape
+
+
         new_strides = []
         for i in range(len(new_shape)):
-            if self._shape[i] == new_shape[i]:
-                new_strides.append(self._strides[i])
+            if i < new_len - self_len:
+                new_strides.append(0)
+                continue
+            if pre_shape[i] == new_shape[i]:
+                new_strides.append(self._strides[i - (new_len - self_len)])
             else:
-                if self._shape[i] == 1:
+                if pre_shape[i] == 1:
                     new_strides.append(0)
                 else:
-                    assert self._shape[i] == new_shape[i]
+                    assert pre_shape[i] == new_shape[i]
         return self.make(new_shape, strides=tuple(new_strides),
                          device=self._device, handle=self._handle, offset=self._offset)
         ### END YOUR SOLUTION

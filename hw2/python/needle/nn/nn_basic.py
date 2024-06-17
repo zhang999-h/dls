@@ -138,7 +138,7 @@ class SoftmaxLoss(Module):
         one_hot_y = init.one_hot(logits.shape[1], y)
         z_y = ops.summation(logits * one_hot_y, axes=1)
         loss = ops.logsumexp(logits, axes=1) - z_y
-        result = ops.summation(loss) / logits.shape[0]
+        result = ops.summation(loss) / np.float32(logits.shape[0])
         return result
         ### END YOUR SOLUTION
 
