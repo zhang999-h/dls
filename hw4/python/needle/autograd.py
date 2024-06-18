@@ -15,7 +15,7 @@ TENSOR_COUNTER = 0
 
 import numpy as array_api
 
-NDArray = numpy.ndarray
+# NDArray = numpy.ndarray
 
 from .backend_selection import array_api, NDArray, Device, cpu, all_devices
 
