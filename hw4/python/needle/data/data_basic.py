@@ -1,8 +1,9 @@
 import numpy as np
+
+import needle
 from ..autograd import Tensor
 
 from typing import Iterator, Optional, List, Sized, Union, Iterable, Any
-
 
 
 class Dataset:
@@ -55,17 +56,26 @@ class DataLoader:
         self.shuffle = shuffle
         self.batch_size = batch_size
         if not self.shuffle:
-            self.ordering = np.array_split(np.arange(len(dataset)), 
+            self.ordering = np.array_split(np.arange(len(dataset)),
                                            range(batch_size, len(dataset), batch_size))
 
     def __iter__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if self.shuffle:
+            self.ordering = np.array_split(np.random.permutation(len(self.dataset)),
+                                           range(self.batch_size, len(self.dataset), self.batch_size))
+        self.index = 0
         ### END YOUR SOLUTION
         return self
 
     def __next__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        idx = self.index
+        if idx >= len(self.ordering):
+            raise StopIteration
+        self.index += 1
+        samples = [Tensor(x) for x in self.dataset[self.ordering[idx]]]
+        return tuple(samples)  # 不转好像也行
+
         ### END YOUR SOLUTION
 
