@@ -229,7 +229,7 @@ class NDArray:
     def flat(self):
         return self.reshape((self.size,))
 
-    def reshape(self, new_shape):
+    def reshape(self, *shape):
         """
         Reshape the matrix without copying memory.  This will return a matrix
         that corresponds to a reshaped array but points to the same memory as
@@ -247,6 +247,11 @@ class NDArray:
         """
 
         ### BEGIN YOUR SOLUTION
+        # 如果args是一个单独的元组，则将其解包
+        if len(shape) == 1 and isinstance(shape[0], (tuple, list)):
+            new_shape = shape[0]
+        else:
+            new_shape = shape
         if prod(new_shape) != self.size:
             raise ValueError()
         if self.is_compact() is False:  # ??

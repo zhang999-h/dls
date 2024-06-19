@@ -439,7 +439,7 @@ void Matmul(const CudaArray& a, const CudaArray& b, CudaArray* out, uint32_t M, 
 
   /// BEGIN SOLUTION
   dim3 block(32,32);
-  dim3 grid((M + 32 -1)/32,(P + 32 -1)/32);
+  dim3 grid((P + 32 -1)/32,(M + 32 -1)/32);
     MatmulKernel<<<grid,block>>>(a.ptr, b.ptr, out->ptr, M, N, P);
   /// END SOLUTION
 }

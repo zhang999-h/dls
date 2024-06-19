@@ -96,6 +96,9 @@ def conv_im2col(Z, weight):
     A = np.lib.stride_tricks.as_strided(Z, shape=(N, H - K + 1, W - K + 1, K, K, C_in),
                                         strides=(Ns, Hs, Ws, Hs, Ws, Cs)).reshape(-1, inner_dim)
     out = A @ weight.reshape(-1, C_out)
+    print("shape:")
+    print(A.shape)
+    print(weight.reshape(-1, C_out).shape)
     return out.reshape(N, H - K + 1, W - K + 1, C_out)
 
 
