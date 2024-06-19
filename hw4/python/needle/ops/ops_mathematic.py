@@ -554,7 +554,7 @@ class Conv(TensorOp):
 
         # W的梯度必须在批次上累积,考虑通过转置将批处理转换为通道
         out_grad_permute = transpose(transpose(out_grad, (0, 1)), (1, 2))
-
+        # 为了能对X作卷积，要把X的N也转为通道
         X_permute = transpose(X, (0, 3))
 
         W_grad = conv(X_permute, out_grad_permute, padding=self.padding)
