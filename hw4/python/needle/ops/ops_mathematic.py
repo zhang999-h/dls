@@ -538,14 +538,30 @@ class Conv(TensorOp):
                           strides=(Ns, Hs * self.stride, Ws * self.stride, Hs, Ws, Cs))
              .compact()
              .reshape((N * out_H * out_W, inner_dim)))
-        out = A @ weight.reshape((inner_dim, C_out))
+        out = A @ weight.compact().reshape((inner_dim, C_out))
 
         return out.reshape(N, out_H, out_W, C_out)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if self.stride > 1:
+            out_grad = dilate(out_grad, (1, 2), self.stride - 1)
+        X, W = node.inputs
+        K, _, _, _ = W.shape
+        W_permute = transpose(flip(W, (0, 1)), (2, 3))  # 转置
+        X_grad = conv(out_grad, W_permute, padding=K - 1 - self.padding)
+
+        # W的梯度必须在批次上累积,考虑通过转置将批处理转换为通道
+        out_grad_permute = transpose(transpose(out_grad, (0, 1)), (1, 2))
+
+        X_permute = transpose(X, (0, 3))
+
+        W_grad = conv(X_permute, out_grad_permute, padding=self.padding)
+
+        W_grad = transpose(transpose(W_grad, (0, 1)), (1, 2))
+
+        return X_grad, W_grad
         ### END YOUR SOLUTION
 
 
