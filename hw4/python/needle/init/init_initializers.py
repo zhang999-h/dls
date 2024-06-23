@@ -16,8 +16,7 @@ def xavier_normal(fan_in, fan_out, gain=1.0, **kwargs):
     ### END YOUR SOLUTION
 
 
-
-def kaiming_uniform(fan_in, fan_out, shape=None, nonlinearity="relu", **kwargs):
+def kaiming_uniform(fan_in=1, fan_out=1, shape=None, nonlinearity="relu", **kwargs):
     assert nonlinearity == "relu", "Only relu supported currently"
     ### BEGIN YOUR SOLUTION
     bound = math.sqrt(2) * math.sqrt(3 / fan_in)
