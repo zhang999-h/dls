@@ -1,5 +1,6 @@
 import sys
 sys.path.append('./python')
+sys.path.append('../../')
 import numpy as np
 import pytest
 from needle import backend_ndarray as nd
@@ -451,7 +452,7 @@ def test_op_conv(Z_shape, W_shape, stride, padding, backward, device):
 @pytest.mark.parametrize("device", _DEVICES)
 def test_train_cifar10(device):
     np.random.seed(0)
-    dataset = ndl.data.CIFAR10Dataset("./data/cifar-10-batches-py", train=True)
+    dataset = ndl.data.CIFAR10Dataset("../../data/cifar-10-batches-py", train=True)
     dataloader = ndl.data.DataLoader(\
              dataset=dataset,
              batch_size=128,

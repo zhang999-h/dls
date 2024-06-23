@@ -566,6 +566,10 @@ class NDArray:
             a = tile(self.compact(), t).compact()
             b = tile(other.compact(), t).compact()
             out = NDArray.make((a.shape[0], b.shape[1], t, t), device=self.device)
+            print(self.device)
+            print(a.device)
+            print(b.device)
+            print(out.device)
             self.device.matmul_tiled(a._handle, b._handle, out._handle, m, n, p)
 
             return (

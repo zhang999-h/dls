@@ -135,7 +135,7 @@ class Sequential(Module):
 class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
-        one_hot_y = init.one_hot(logits.shape[1], y)
+        one_hot_y = init.one_hot(logits.shape[1], y, device=logits.device, dtype=logits.dtype)
         z_y = ops.summation(logits * one_hot_y, axes=1)
         loss = ops.logsumexp(logits, axes=1) - z_y
         result = ops.summation(loss) / np.float32(logits.shape[0])
@@ -150,10 +150,10 @@ class BatchNorm1d(Module):
         self.eps = eps
         self.momentum = momentum
         ### BEGIN YOUR SOLUTION
-        self.weight = Parameter(init.ones(dim, dtype=dtype))
-        self.bias = Parameter(init.zeros(dim, dtype=dtype))
-        self.running_mean = init.zeros(dim, dtype=dtype)
-        self.running_var = init.ones(dim, dtype=dtype)
+        self.weight = Parameter(init.ones(dim, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(dim, device=device, dtype=dtype))
+        self.running_mean = init.zeros(dim, device=device, dtype=dtype)
+        self.running_var = init.ones(dim, device=device, dtype=dtype)
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
@@ -186,14 +186,24 @@ class BatchNorm1d(Module):
         ### END YOUR SOLUTION
 
 
+class BatchNorm2d(BatchNorm1d):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x: Tensor):
+        # nchw -> nhcw -> nhwc
+        s = x.shape
+        _x = x.transpose((1, 2)).transpose((2, 3)).reshape((s[0] * s[2] * s[3], s[1]))
+        y = super().forward(_x).reshape((s[0], s[2], s[3], s[1]))
+        return y.transpose((2, 3)).transpose((1, 2))
 class LayerNorm1d(Module):
     def __init__(self, dim, eps=1e-5, device=None, dtype="float32"):
         super().__init__()
         self.dim = dim
         self.eps = eps
         ### BEGIN YOUR SOLUTION
-        self.weight = Parameter(init.ones(dim, dtype=dtype))
-        self.bias = Parameter(init.zeros(dim, dtype=dtype))
+        self.weight = Parameter(init.ones(dim, device=device, dtype=dtype))
+        self.bias = Parameter(init.zeros(dim, device=device, dtype=dtype))
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
@@ -216,7 +226,7 @@ class Dropout(Module):
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
         if self.training is True:
-            a = init.randb(*x.shape, p=1 - self.p)
+            a = init.randb(*x.shape, p=1 - self.p, device=x.device)
             return x * a / (1 - self.p)
         return x
         ### END YOUR SOLUTION

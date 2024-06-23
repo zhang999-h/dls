@@ -7,16 +7,69 @@ import numpy as np
 np.random.seed(0)
 
 
-class ResNet9(ndl.nn.Module):
-    def __init__(self, device=None, dtype="float32"):
+class ConvBN(ndl.nn.Module):
+    def __init__(self, c_in, c_out, k, s, device=None, dtype="float32"):
         super().__init__()
         ### BEGIN YOUR SOLUTION ###
-        raise NotImplementedError() ###
+        self.layer = nn.Sequential(
+            nn.Conv(c_in, c_out, k, s, device=device, dtype=dtype),
+            nn.BatchNorm2d(c_out, device=device, dtype=dtype),
+            nn.ReLU()
+        )
         ### END YOUR SOLUTION
 
     def forward(self, x):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return self.layer(x)
+        ### END YOUR SOLUTION
+
+
+class ResidualBlock(ndl.nn.Module):
+    def __init__(self, c_in, c_out, k, s, device=None, dtype="float32"):
+        super().__init__()
+        ### BEGIN YOUR SOLUTION ###
+        m = nn.Sequential(
+            ConvBN(c_in, c_out, k, s, device=device, dtype=dtype),
+            ConvBN(c_in, c_out, k, s, device=device, dtype=dtype)
+        )
+        self.layer = nn.Residual(m)
+        ### END YOUR SOLUTION
+
+    def forward(self, x):
+        ### BEGIN YOUR SOLUTION
+        return self.layer(x)
+        ### END YOUR SOLUTION
+
+
+class ResNet9(ndl.nn.Module):
+    def __init__(self, device=None, dtype="float32"):
+        super().__init__()
+        ### BEGIN YOUR SOLUTION ###
+        self.conv_bn1 = ConvBN(3, 16, 7, 4, device=device, dtype=dtype)
+        self.conv_bn2 = ConvBN(16, 32, 3, 2, device=device, dtype=dtype)
+        self.res1 = ResidualBlock(32, 32, 3, 1, device=device, dtype=dtype)
+        self.conv_bn3 = ConvBN(32, 64, 3, 2, device=device, dtype=dtype)
+        self.conv_bn4 = ConvBN(64, 128, 3, 2, device=device, dtype=dtype)
+        self.res2 = ResidualBlock(128, 128, 3, 1, device=device, dtype=dtype)
+        self.flatten = nn.Flatten()
+        self.linear1 = nn.Linear(128, 128, device=device, dtype=dtype)
+        self.relu = nn.ReLU()
+        self.linear2 = nn.Linear(128, 10, device=device, dtype=dtype)
+        ### END YOUR SOLUTION
+
+    def forward(self, x):
+        ### BEGIN YOUR SOLUTION
+        out = self.conv_bn1(x)
+        out = self.conv_bn2(out)
+        out = self.res1(out)
+        out = self.conv_bn3(out)
+        out = self.conv_bn4(out)
+        out = self.res2(out)
+        out = self.flatten(out)
+        out = self.linear1(out)
+        out = self.relu(out)
+        out = self.linear2(out)
+        return out
         ### END YOUR SOLUTION
 
 

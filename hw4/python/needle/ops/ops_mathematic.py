@@ -181,7 +181,7 @@ class Reshape(TensorOp):
 
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        return a.reshape(self.shape)
+        return a.compact().reshape(self.shape)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
@@ -234,6 +234,10 @@ class Summation(TensorOp):
 
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
+        if isinstance(self.axes, (List, Tuple)):
+            for ax in self.axes:
+                a = a.sum(axis=ax)
+            return a
         return array_api.sum(a, axis=self.axes)
         ### END YOUR SOLUTION
 
@@ -347,8 +351,8 @@ class ReLU(TensorOp):
         ### BEGIN YOUR SOLUTION
         out_grad_data = out_grad.realize_cached_data()
         input_data = node.inputs[0].realize_cached_data()
-        out_grad_data[input_data < 0] = 0
-        return Tensor(out_grad_data)
+        out_grad_data = out_grad_data * (input_data > 0)
+        return Tensor(out_grad_data, device=out_grad.device)
         ### END YOUR SOLUTION
 
 
