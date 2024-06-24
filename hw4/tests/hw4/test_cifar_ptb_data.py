@@ -53,7 +53,7 @@ BPTT = [3, 32]
 @pytest.mark.parametrize("device", _DEVICES, ids=["cpu", "cuda"])
 def test_ptb_dataset(batch_size, bptt, train, device):
     # TODO update with more tests?
-    corpus = ndl.data.Corpus("data/ptb")
+    corpus = ndl.data.Corpus("../../data/ptb")
     if train:
         data = ndl.data.batchify(corpus.train, batch_size, device=device, dtype="float32")
     else:

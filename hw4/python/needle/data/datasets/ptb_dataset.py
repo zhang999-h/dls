@@ -25,7 +25,9 @@ class Dictionary(object):
         Returns the word's unique ID.
         """
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if word not in self.idx2word:
+            self.word2idx[word] = len(self)
+            self.idx2word.append(word)
         ### END YOUR SOLUTION
 
     def __len__(self):
@@ -33,7 +35,7 @@ class Dictionary(object):
         Returns the number of unique words in the dictionary.
         """
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return len(self.idx2word)
         ### END YOUR SOLUTION
 
 
@@ -60,7 +62,17 @@ class Corpus(object):
         ids: List of ids
         """
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        with open(path, 'r', encoding='utf-8') as f:
+            all_lines = f.readlines()
+        ids = []
+        for i, line in enumerate(all_lines):
+            if i == max_lines:
+                break
+            words = line.strip().split(' ')
+            for word in words:
+                ids.append(self.dictionary.add_word(word))
+            ids.append(self.dictionary.add_word('<eos>'))
+        return ids
         ### END YOUR SOLUTION
 
 
@@ -81,7 +93,13 @@ def batchify(data, batch_size, device, dtype):
     Returns the data as a numpy array of shape (nbatch, batch_size).
     """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    # 修剪data的不能整除部分
+    n = len(data)
+    nbatch = n // batch_size
+    data = data[:nbatch * batch_size]
+    # 改变形状。要用到转置操作，所以必须得是numpy类型的数组
+    data = np.array(data).reshape((batch_size, nbatch)).transpose()
+    return data
     ### END YOUR SOLUTION
 
 
@@ -105,5 +123,11 @@ def get_batch(batches, i, bptt, device=None, dtype=None):
     target - Tensor of shape (bptt*bs,) with cached data as NDArray
     """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    bptt = min(bptt, len(batches) - 1 - i)
+    data = batches[i:i + bptt]
+    target = batches[i + 1:i + bptt + 1]
+    # 构造tensor
+    data = Tensor(data, device=device, dtype=dtype)
+    target = Tensor(target.reshape(-1), device=device, dtype=dtype)
+    return data, target
     ### END YOUR SOLUTION
