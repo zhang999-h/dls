@@ -350,7 +350,7 @@ class Tensor(Value):
     def broadcast_to(self, shape):
         return needle.ops.BroadcastTo(shape)(self)
 
-    def reshape(self, shape):
+    def reshape(self, *shape):
         return needle.ops.Reshape(shape)(self)
 
     def __neg__(self):

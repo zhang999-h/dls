@@ -1,6 +1,8 @@
 import sys
 sys.path.append('./python')
 sys.path.append('./apps')
+# sys.path.append('../../apps')
+# sys.path.append('../../')
 import numpy as np
 import pytest
 import torch
@@ -134,8 +136,9 @@ def test_rnn(seq_length, num_layers, batch_size, input_size, hidden_size, bias, 
     np.testing.assert_allclose(h_.detach().numpy(), h.numpy(), atol=1e-5, rtol=1e-5)
     np.testing.assert_allclose(output_.detach().numpy(), output.numpy(), atol=1e-5, rtol=1e-5)
 
-    output.sum().backward()
     output_.sum().backward()
+    output.sum().backward()
+
     np.testing.assert_allclose(model.rnn_cells[0].W_ih.grad.detach().numpy(), model_.weight_ih_l0.grad.numpy().transpose(), atol=1e-5, rtol=1e-5)
 
 

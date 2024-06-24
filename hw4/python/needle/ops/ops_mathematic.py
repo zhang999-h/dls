@@ -361,12 +361,13 @@ def relu(a):
 class Tanh(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        return a.tanh()
+        return numpy.tanh(a)
+        #return a.tanh()
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        return (1 - tanh(node.inputs[0])**2) * out_grad
+        return (1 + -tanh(node.inputs[0])**2) * out_grad
         ### END YOUR SOLUTION
 
 
