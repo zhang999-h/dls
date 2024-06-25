@@ -37,7 +37,16 @@ def parse_mnist(image_filesname, label_filename):
                 for MNIST will contain the values 0-9.
     """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    with gzip.open(image_filesname, 'rb') as f:
+        magic, num, rows, cols = struct.unpack(">IIII", f.read(16))
+        X = np.frombuffer(f.read(), dtype=np.uint8).reshape(num, rows * cols)
+        X = X.astype(np.float32) / 255.0
+
+    with gzip.open(label_filename, 'rb') as f:
+        magic, num = struct.unpack(">II", f.read(8))
+        y = np.frombuffer(f.read(), dtype=np.uint8)
+
+    return X, y
     ### END YOUR SOLUTION
 
 
@@ -58,7 +67,10 @@ def softmax_loss(Z, y_one_hot):
         Average softmax loss over the sample. (ndl.Tensor[np.float32])
     """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    tmp = ndl.log(ndl.summation(ndl.exp(Z), axes=1))
+
+    tmp -= ndl.summation(y_one_hot * Z, axes=1)
+    return ndl.summation(tmp) / tmp.shape[0]
     ### END YOUR SOLUTION
 
 
@@ -180,7 +192,36 @@ def epoch_general_ptb(data, model, seq_len=40, loss_fn=nn.SoftmaxLoss(), opt=Non
     """
     np.random.seed(4)
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    if opt is None:
+        model.eval()
+    else:
+        model.train()
+    nbatch, batch_size = data.shape
+    h = None
+    tol_acc, tol_loss = 0., 0.
+    tot = nbatch * batch_size
+    for i in range(0, nbatch, seq_len):
+        #
+        if opt:
+            opt.reset_grad()
+        # X shape of (seq_len, bs)
+        # y shape of (seq_len * bs)
+        X, y = ndl.data.get_batch(data, i, seq_len, device=device, dtype=dtype)
+        y_hat, h = model(X, h)
+        tol_acc += (y_hat.numpy().argmax(axis=1) == y.numpy()).sum()
+        if isinstance(h, tuple):
+            h = (h[0].detach(), h[1].detach())
+        else:
+            h = h.detach()
+        loss = loss_fn(y_hat, y)
+        tol_loss += loss.numpy() * y.shape[0]
+        if opt:
+            loss.backward()
+            opt.step()
+        if i % 500 == 0:
+            print('loops: {}'.format(i))
+    return tol_acc / tot, tol_loss / tot
+
     ### END YOUR SOLUTION
 
 
@@ -207,7 +248,12 @@ def train_ptb(model, data, seq_len=40, n_epochs=1, optimizer=ndl.optim.SGD,
     """
     np.random.seed(4)
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    acc, loss = 0., 0.
+    opt = optimizer(params=model.parameters(), lr=lr, weight_decay=weight_decay)
+    for i in range(n_epochs):
+        acc, loss = epoch_general_ptb(data, model, seq_len, loss_fn(), opt, clip, device=device, dtype=dtype)
+        print('epoch: {}, acc: {:.3f}, loss: {:.3f}'.format(i, acc, loss[0]))
+    return acc, loss
     ### END YOUR SOLUTION
 
 def evaluate_ptb(model, data, seq_len=40, loss_fn=nn.SoftmaxLoss,
@@ -227,7 +273,8 @@ def evaluate_ptb(model, data, seq_len=40, loss_fn=nn.SoftmaxLoss,
     """
     np.random.seed(4)
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    acc, loss = epoch_general_ptb(data, model, seq_len=seq_len, loss_fn=loss_fn(), opt=None, device=device, dtype=dtype)
+    return acc, loss
     ### END YOUR SOLUTION
 
 ### CODE BELOW IS FOR ILLUSTRATION, YOU DO NOT NEED TO EDIT

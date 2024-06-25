@@ -28,6 +28,7 @@ class Dictionary(object):
         if word not in self.idx2word:
             self.word2idx[word] = len(self)
             self.idx2word.append(word)
+        return self.word2idx[word]
         ### END YOUR SOLUTION
 
     def __len__(self):

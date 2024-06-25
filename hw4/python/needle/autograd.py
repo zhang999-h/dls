@@ -351,6 +351,11 @@ class Tensor(Value):
         return needle.ops.BroadcastTo(shape)(self)
 
     def reshape(self, *shape):
+        # 如果args是一个单独的元组，则将其解包
+        if len(shape) == 1 and isinstance(shape[0], (tuple, list)):
+            shape = shape[0]
+        else:
+            shape = shape
         return needle.ops.Reshape(shape)(self)
 
     def __neg__(self):
