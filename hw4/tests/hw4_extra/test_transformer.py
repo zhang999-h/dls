@@ -106,7 +106,8 @@ def test_attention_layer(batch_size, seq_len, input_dim, num_head, dim_head, cau
     )])
 
     labels_path = (
-        "./tests/hw4_extra/data/" + 
+        # "./tests/hw4_extra/data/" +
+        "./data/" +
         "test_attention_layer-{}.npy"
         .format(current_input_id))
 

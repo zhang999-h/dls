@@ -209,9 +209,23 @@ class AttentionLayer(Module):
         _, _, v_dim = v.shape
 
         result = None
-
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # map queries, key, and values to heads.
+        q_prime = self.q_projection(self.prenorm_q(q))
+        k_prime = self.k_projection(self.prenorm_k(k))
+        v_prime = self.v_projection(self.prenorm_v(v))
+        # unravel heads from the channels axis.
+        q_prime = q_prime.reshape(batch_size, queries_len, self.num_head, self.dim_head).transpose((1, 2))
+        k_prime = k_prime.reshape(batch_size, keys_values_len, self.num_head, self.dim_head).transpose((1, 2))
+        v_prime = v_prime.reshape(batch_size, keys_values_len, self.num_head, self.dim_head).transpose((1, 2))
+        # compute the multi-head attention activation.
+        x, probs = self.attn(q_prime, k_prime, v_prime)
+        # 返回的x是(B,H,T,D)，处理成为(B,T,H*D)
+        x = x.transpose((1, 2)).reshape((batch_size, queries_len, self.num_head * self.dim_head))
+        # project back to the input space of the layer with self.out_projection
+        x_prime = self.out_projection(x)
+        # x_prime (batch_size, kv_len, out_features)
+        result = x_prime
         ### END YOUR SOLUTION
 
         return result

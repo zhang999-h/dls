@@ -89,15 +89,24 @@ class Linear(Module):
 
         ### BEGIN YOUR SOLUTION
         self.weight = Parameter(init.kaiming_uniform(in_features, out_features, device=device, dtype=dtype))
-        self.bias = Parameter(
-            init.kaiming_uniform(out_features, 1, device=device, dtype=dtype).reshape((1, out_features)))
+        self.bias = bias
+        if bias:
+            self.bias = Parameter(
+                init.kaiming_uniform(out_features, 1, device=device, dtype=dtype).reshape((1, out_features)))
         ### END YOUR SOLUTION
 
     def forward(self, X: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        X_mul_W = X.matmul(self.weight)
-        b = self.bias.broadcast_to(X_mul_W.shape)
-        return ops.add(X_mul_W, b)
+        origin_shape = X.shape
+        batch_size = int(np.prod(X.shape) / origin_shape[-1])
+        X = X.reshape((batch_size, origin_shape[-1]))
+        out = X.matmul(self.weight)
+        if self.bias:
+            b = self.bias.broadcast_to(out.shape)
+            out = ops.add(out, b)
+        new_shape = list(origin_shape)
+        new_shape[-1] = self.out_features
+        return out.reshape(tuple(new_shape))
         ### END YOUR SOLUTION
 
 
@@ -208,13 +217,18 @@ class LayerNorm1d(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
+        # 处理多维数据
+        origin_shape = x.shape
+        batch_size = int(np.prod(x.shape) / self.dim)
+        x = x.reshape((batch_size, self.dim))
+
         mean = (x.sum(1) / x.shape[1]).reshape((x.shape[0], 1)).broadcast_to(x.shape)
         var = ops.summation(ops.power_scalar(x - mean, 2), axes=1) / x.shape[1]
         var = var.reshape((x.shape[0], 1)).broadcast_to(x.shape)
         norm = ((x - mean) /
                 ops.power_scalar(var + self.eps, 0.5))
         ans = self.weight.broadcast_to(x.shape) * norm + self.bias.broadcast_to(x.shape)
-        return ans
+        return ans.reshape(origin_shape)
         ### END YOUR SOLUTION
 
 
