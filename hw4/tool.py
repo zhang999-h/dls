@@ -1,6 +1,7 @@
 import os
 import requests
-
+import torch
+torch.nn.Softmax
 # 基本设置
 ptb_data = "https://raw.githubusercontent.com/wojzaremba/lstm/master/data/ptb."
 data_dir = './data/ptb'

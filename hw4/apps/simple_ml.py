@@ -200,6 +200,7 @@ def epoch_general_ptb(data, model, seq_len=40, loss_fn=nn.SoftmaxLoss(), opt=Non
     h = None
     tol_acc, tol_loss = 0., 0.
     tot = nbatch * batch_size
+    t = 0
     for i in range(0, nbatch, seq_len):
         #
         if opt:
@@ -218,8 +219,12 @@ def epoch_general_ptb(data, model, seq_len=40, loss_fn=nn.SoftmaxLoss(), opt=Non
         if opt:
             loss.backward()
             opt.step()
+        t += y.shape[0]
         if i % 500 == 0:
-            print('loops: {}'.format(i))
+            print('loops: {} acc:{} loss:{}'.format(i, tol_acc / t, tol_loss / t))
+        if i % 5000 == 0:
+            with open('0result.txt', 'a') as file:
+                print('loops: {} acc:{}'.format(i, tol_acc / t), file=file)
     return tol_acc / tot, tol_loss / tot
 
     ### END YOUR SOLUTION
@@ -253,6 +258,9 @@ def train_ptb(model, data, seq_len=40, n_epochs=1, optimizer=ndl.optim.SGD,
     for i in range(n_epochs):
         acc, loss = epoch_general_ptb(data, model, seq_len, loss_fn(), opt, clip, device=device, dtype=dtype)
         print('epoch: {}, acc: {:.3f}, loss: {:.3f}'.format(i, acc, loss[0]))
+        with open('0result.txt', 'a') as file:
+            print('######################', file=file)
+            print('epoch: {}, acc: {:.3f}, loss: {:.3f}'.format(i, acc, loss[0]), file=file)
     return acc, loss
     ### END YOUR SOLUTION
 
@@ -274,6 +282,9 @@ def evaluate_ptb(model, data, seq_len=40, loss_fn=nn.SoftmaxLoss,
     np.random.seed(4)
     ### BEGIN YOUR SOLUTION
     acc, loss = epoch_general_ptb(data, model, seq_len=seq_len, loss_fn=loss_fn(), opt=None, device=device, dtype=dtype)
+    print('Test : acc: {:.3f}, loss: {:.3f}'.format(acc, loss[0]))
+    with open('0result.txt', 'a') as file:
+        print('Test : acc: {:.3f}, loss: {:.3f}'.format(acc, loss[0]), file=file)
     return acc, loss
     ### END YOUR SOLUTION
 
