@@ -1,3 +1,4 @@
+import math
 from typing import List
 from needle.autograd import Tensor
 import needle.backend_ndarray.ndarray as ndarray
@@ -108,7 +109,15 @@ class MultiHeadAttention(Module):
         probs = None
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        q_kt = self.matmul(q, k)
+        mask = self.create_causal_mask(queries_len, queries_len, device=self.device)
+        tmp = q_kt / math.sqrt(q_dim)
+        if self.causal:
+            tmp = tmp + mask.broadcast_to(tmp.shape)
+        tmp = self.softmax(tmp)
+        # 应将 dropout 应用于 attention softmax
+        probs = self.dropout(tmp)
+        result = self.matmul(probs, v.transpose((2, 3)))
         ### END YOUR SOLUTION
 
         return result, probs

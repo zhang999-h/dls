@@ -1,6 +1,8 @@
 import sys
 sys.path.append('./python')
 sys.path.append('./apps')
+sys.path.append('../../apps')
+sys.path.append('../../')
 import numpy as np
 import pytest
 import torch
@@ -53,7 +55,8 @@ def test_attention_activation(batch_size, num_heads, queries_len, inner_dim, cau
     )])
 
     labels_path = (
-        "./tests/hw4_extra/data/" + 
+        #"./tests/hw4_extra/data/" +
+        "./data/" +
         "test_attention_activation-{}.npy"
         .format(current_input_id))
 
