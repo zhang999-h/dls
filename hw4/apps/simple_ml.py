@@ -220,7 +220,7 @@ def epoch_general_ptb(data, model, seq_len=40, loss_fn=nn.SoftmaxLoss(), opt=Non
             loss.backward()
             opt.step()
         t += y.shape[0]
-        if i % 500 == 0:
+        if i % 20 == 0:
             print('loops: {} acc:{} loss:{}'.format(i, tol_acc / t, tol_loss / t))
         if i % 5000 == 0:
             with open('0result.txt', 'a') as file:

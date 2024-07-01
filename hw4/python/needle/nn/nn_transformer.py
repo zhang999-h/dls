@@ -328,7 +328,17 @@ class Transformer(Module):
         self.batch_first = batch_first
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.embedding_size = embedding_size
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+        self.sequence_len = sequence_len
+        self.pos_embedding = Embedding(sequence_len, embedding_size, device=device, dtype=dtype)
+        self.transformer = []
+        for i in range(num_layers):
+            self.transformer.append(TransformerLayer(embedding_size, num_head, dim_head, hidden_size,
+                                                     dropout=dropout, causal=causal,
+                                                     device=device, dtype=dtype))
+
         ### END YOUR SOLUTION
 
     def forward(
@@ -340,7 +350,17 @@ class Transformer(Module):
             x = ops.transpose(x, axes=(0, 1))
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # 位置编码
+        x_seq_len = x.shape[1]
+        pos = (Tensor(np.arange(x_seq_len), device=self.device, dtype=self.dtype)
+               .reshape((1, x_seq_len)))
+        pos_emb = self.pos_embedding(pos)
+        pos_emb = pos_emb.broadcast_to(x.shape)
+        x = x + pos_emb
+
+        for trans in self.transformer:
+            x = trans(x)
+
         ### END YOUR SOLUTION
 
         if not self.batch_first:

@@ -75,7 +75,7 @@ class ResNet9(ndl.nn.Module):
 
 class LanguageModel(nn.Module):
     def __init__(self, embedding_size, output_size, hidden_size, num_layers=1,
-                 seq_model='rnn', device=None, dtype="float32"):
+                 seq_model='rnn', seq_len=None, device=None, dtype="float32"):
         """
         Consists of an embedding layer, a sequence model (either RNN or LSTM), and a
         linear layer.
@@ -96,11 +96,16 @@ class LanguageModel(nn.Module):
         self.dtype = dtype
         self.seq_model = seq_model
         self.embedding_layer = nn.Embedding(output_size, embedding_size, device=device, dtype=dtype)
-        if seq_model is 'rnn':
-            self.seq_layer = nn.RNN(embedding_size, hidden_size, num_layers=num_layers, device=device, dtype=dtype)
-        else:
-            self.seq_layer = nn.LSTM(embedding_size, hidden_size, num_layers=num_layers, device=device, dtype=dtype)
         self.linear_layer = nn.Linear(hidden_size, output_size, device=device, dtype=dtype)
+        if seq_model == 'rnn':
+            self.seq_layer = nn.RNN(embedding_size, hidden_size, num_layers=num_layers, device=device, dtype=dtype)
+        elif seq_model == 'lstm':
+            self.seq_layer = nn.LSTM(embedding_size, hidden_size, num_layers=num_layers, device=device, dtype=dtype)
+        else:
+            self.seq_layer = nn.Transformer(embedding_size, hidden_size, num_layers=num_layers, device=device,
+                                            dtype=dtype, sequence_len=seq_len)
+            self.linear_layer = nn.Linear(embedding_size, output_size, device=device, dtype=dtype)
+        # self.linear_layer = nn.Linear(hidden_size, output_size, device=device, dtype=dtype)
         ### END YOUR SOLUTION
 
     def forward(self, x, h=None):
@@ -120,7 +125,9 @@ class LanguageModel(nn.Module):
         seq_len, batch_size = x.shape
         x_embedding = self.embedding_layer(x)
         out, h = self.seq_layer(x_embedding, h)
-        out = self.linear_layer(out.reshape(seq_len * batch_size, self.hidden_size))
+        # reshape的size最后一维RNN用hidden_size，Transformer用embedding_size
+        last_d = out.shape[2]
+        out = self.linear_layer(out.reshape(seq_len * batch_size, last_d))
         # 返回的是 out(seq_len*bs, output_size) output_size是one_hot长度，
         # 所以out相当于所有预测的单词的one_hot
         return out, h

@@ -106,8 +106,8 @@ def test_attention_layer(batch_size, seq_len, input_dim, num_head, dim_head, cau
     )])
 
     labels_path = (
-        # "./tests/hw4_extra/data/" +
-        "./data/" +
+        "./tests/hw4_extra/data/" +
+        # "./data/" +
         "test_attention_layer-{}.npy"
         .format(current_input_id))
 
@@ -128,7 +128,7 @@ def test_attention_layer(batch_size, seq_len, input_dim, num_head, dim_head, cau
 @pytest.mark.parametrize("device", _DEVICES, ids=["cpu", "cuda"])
 def test_transformer_layer(batch_size, seq_len, input_dim, num_head, dim_head, hidden_size, causal, dropout, device):
     
-    np.random.seed(19943)
+    np.random.seed(19944)
 
     x = np.random.randn(
         batch_size, seq_len, input_dim
@@ -150,7 +150,8 @@ def test_transformer_layer(batch_size, seq_len, input_dim, num_head, dim_head, h
     )])
 
     labels_path = (
-        "./tests/hw4_extra/data/" + 
+        # "./tests/hw4_extra/data/" +
+        "./data/" +
         "test_transformer_layer-{}.npy"
         .format(current_input_id))
 
@@ -205,7 +206,8 @@ def test_transformer_model(
     )])
 
     labels_path = (
-        "./tests/hw4_extra/data/" + 
+        # "./tests/hw4_extra/data/" +
+        "./data/" +
         "test_transformer_model-{}.npy"
         .format(current_input_id))
 
