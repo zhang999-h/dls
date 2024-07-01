@@ -251,9 +251,27 @@ class TransformerLayer(Module):
         self.device = device
         self.dtype = dtype
 
-        ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
-        ### END YOUR SOLUTION
+        # ### BEGIN YOUR SOLUTION
+        self.q_features = q_features
+        self.num_head = num_head
+        self.dim_head = dim_head
+        self.hidden_size = hidden_size
+        self.causal = causal
+
+        self.relu = ReLU()
+        # attention_layer不能放在Linear后面，可能是因为随机数的原因
+        self.attention_layer = AttentionLayer(q_features, num_head, dim_head,
+                                              dropout=dropout, causal=causal, device=device, dtype=dtype)
+
+        self.linear1 = Linear(
+            q_features, hidden_size, bias=True, device=device, dtype=dtype)
+        self.linear2 = Linear(
+            hidden_size, q_features, bias=True, device=device, dtype=dtype)
+        self.dropout = Dropout(dropout)
+        self.norm = LayerNorm1d(
+            q_features, device=device, dtype=dtype)
+
+        # ### END YOUR SOLUTION
 
     def forward(
         self,
@@ -268,7 +286,18 @@ class TransformerLayer(Module):
         batch_size, seq_len, x_dim = x.shape
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # Attention
+        x = x + self.dropout(self.attention_layer(x))
+        # FeedForward
+        x = x + self.dropout(
+            self.linear2(
+                self.dropout(
+                    self.relu(
+                        self.linear1(self.norm(x))
+                    )
+                )
+            )
+        )
         ### END YOUR SOLUTION
 
         return x
